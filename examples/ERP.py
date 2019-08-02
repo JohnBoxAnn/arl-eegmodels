@@ -1,3 +1,4 @@
+#coding:utf-8
 """
  Sample script using EEGNet to classify Event-Related Potential (ERP) EEG data
  from a four-class classification task, using the sample dataset provided in
@@ -64,6 +65,8 @@
  distribution. 
 """
 
+import sys
+import os
 import numpy as np
 
 # mne imports
@@ -72,6 +75,7 @@ from mne import io
 from mne.datasets import sample
 
 # EEGNet-specific imports
+sys.path.append('../')
 from EEGModels import EEGNet
 from tensorflow.keras import utils as np_utils
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -131,11 +135,12 @@ Y_train      = np_utils.to_categorical(Y_train-1)
 Y_validate   = np_utils.to_categorical(Y_validate-1)
 Y_test       = np_utils.to_categorical(Y_test-1)
 
-# convert data to NCHW (trials, kernels, channels, samples) format. Data 
+# convert data to NHWC (trials, channels, samples, kernels) format. Data 
 # contains 60 channels and 151 time-points. Set the number of kernels to 1.
-X_train      = X_train.reshape(X_train.shape[0], kernels, chans, samples)
-X_validate   = X_validate.reshape(X_validate.shape[0], kernels, chans, samples)
-X_test       = X_test.reshape(X_test.shape[0], kernels, chans, samples)
+# NHWC for CPU, NCHW for GPU (default)
+X_train      = X_train.reshape(X_train.shape[0], chans, samples, kernels)
+X_validate   = X_validate.reshape(X_validate.shape[0], chans, samples, kernels)
+X_test       = X_test.reshape(X_test.shape[0], chans, samples, kernels)
    
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
@@ -155,7 +160,10 @@ model.compile(loss='categorical_crossentropy', optimizer='adam',
 numParams    = model.count_params()    
 
 # set a valid path for your system to record model checkpoints
-checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint.h5', verbose=1,
+filepath = os.path.join('./tmp','checkpoint.h5')
+if not os.path.exists('./tmp'): #判断是否存在
+    os.makedirs('./tmp') #不存在则创建
+checkpointer = ModelCheckpoint(filepath=filepath, verbose=1,
                                save_best_only=True)
 
 ###############################################################################
@@ -179,7 +187,7 @@ fittedModel = model.fit(X_train, Y_train, batch_size = 16, epochs = 300,
                         callbacks=[checkpointer], class_weight = class_weights)
 
 # load optimal weights
-model.load_weights('/tmp/checkpoint.h5')
+model.load_weights(filepath)
 
 ###############################################################################
 # can alternatively used the weights provided in the repo. If so it should get

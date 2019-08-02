@@ -127,11 +127,11 @@ def EEGNet(nb_classes, Chans = 64, Samples = 128,
         raise ValueError('dropoutType must be one of SpatialDropout2D '
                          'or Dropout, passed as a string.')
     
-    input1   = Input(shape = (1, Chans, Samples))
+    input1   = Input(shape = (Chans, Samples, 1))
 
     ##################################################################
     block1       = Conv2D(F1, (1, kernLength), padding = 'same',
-                                   input_shape = (1, Chans, Samples),
+                                   input_shape = (Chans, Samples, 1),
                                    use_bias = False)(input1)
     block1       = BatchNormalization(axis = 1)(block1)
     block1       = DepthwiseConv2D((Chans, 1), use_bias = False, 
