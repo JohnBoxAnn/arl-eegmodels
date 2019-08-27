@@ -75,8 +75,7 @@ from mne import io
 from mne.datasets import sample
 
 # EEGNet-specific imports
-sys.path.append('../')
-from EEGModels import EEGNet
+from EEGModels.EEGModels import EEGNet
 from tensorflow.keras import utils as np_utils
 from tensorflow.keras.callbacks import ModelCheckpoint
 
