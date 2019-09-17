@@ -44,16 +44,16 @@
  distribution. 
 """
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Activation, Permute, Dropout
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
-from tensorflow.keras.layers import SeparableConv2D, DepthwiseConv2D
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.layers import SpatialDropout2D
-from tensorflow.keras.regularizers import l1_l2
-from tensorflow.keras.layers import Input, Flatten
-from tensorflow.keras.constraints import max_norm
-from tensorflow.keras import backend as K
+from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.layers import Dense, Activation, Permute, Dropout
+from tensorflow.python.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
+from tensorflow.python.keras.layers import SeparableConv2D, DepthwiseConv2D
+from tensorflow.python.keras.layers import BatchNormalization
+from tensorflow.python.keras.layers import SpatialDropout2D
+from tensorflow.python.keras.regularizers import l1_l2
+from tensorflow.python.keras.layers import Input, Flatten
+from tensorflow.python.keras.constraints import max_norm
+from tensorflow.contrib.keras import backend as K
 
 
 def EEGNet(nb_classes, Chans = 64, Samples = 128, 
@@ -128,11 +128,10 @@ def EEGNet(nb_classes, Chans = 64, Samples = 128,
         raise ValueError('dropoutType must be one of SpatialDropout2D '
                          'or Dropout, passed as a string.')
     
-    input1   = Input(shape = (Chans, Samples, 1))
+    input1   = Input(shape = (1, Chans, Samples))
 
     ##################################################################
     block1       = Conv2D(F1, (1, kernLength), padding = 'same',
-                                   input_shape = (Chans, Samples, 1),
                                    use_bias = False)(input1)
     block1       = BatchNormalization(axis = 1)(block1)
     block1       = DepthwiseConv2D((Chans, 1), use_bias = False, 
@@ -143,8 +142,8 @@ def EEGNet(nb_classes, Chans = 64, Samples = 128,
     block1       = AveragePooling2D((1, 4))(block1)
     block1       = dropoutType(dropoutRate)(block1)
     
-    block2       = SeparableConv2D(F2, (1, 16),
-                                   use_bias = False, padding = 'same')(block1)
+    block2       = SeparableConv2D(F2, (1, 16), padding = 'same', 
+                                   use_bias = False)(block1)
     block2       = BatchNormalization(axis = 1)(block2)
     block2       = Activation('elu')(block2)
     block2       = AveragePooling2D((1, 8))(block2)
